@@ -16,6 +16,11 @@ export const searchTextState = atom({
   default: "",
 });
 
+export const selectedColumnsState = atom({
+  key: "selectedFilters",
+  default: new Set(columns.map((col) => col.title))
+})
+
 export const cellState = selectorFamily({
   key: "cell",
   default: "",
@@ -45,6 +50,7 @@ export const filteredDataState = selector({
   key: "filtered",
   get: ({ get }) => {
     const allData = get(dataState);
+
     if (!allData) return [];
 
     const search = get(searchTextState);

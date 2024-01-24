@@ -5,6 +5,7 @@ import { Avatar } from "../Avatar/Avatar";
 import { Select } from "../Select/Select";
 import { Input } from '../Input/Input';
 import { cellState } from '../../store';
+
 const CustomCell = ({ id, type, row, options }) => {
   const [cell, setCell] = useRecoilState(cellState({ rowId: row.id, cellId: id }))
   const handleChange = (event) => {

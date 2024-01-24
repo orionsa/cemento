@@ -1,34 +1,39 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import DataTable from "react-data-table-component";
 import { useRecoilState, useRecoilValue } from "recoil";
 
-import CustomCell from "./CustomCell";
 import { getUsers, columns, groupByKeys } from "../../utils/mockData";
 import { FiltersBar } from "./FiltersBar/FiltersBar";
 import { get, set } from "../../utils/localStorage";
 import {
   dataState,
   searchTextState,
-  groupedDataState
+  groupedDataState,
+  selectedColumnsState
 } from "../../store";
 import { SearchBar } from "../SearcBar/SearchBar";
-import { OuterCell } from "./OuterCell";
+import GroupTableCell from "./GroupTableCell";
+import InnerTable from "./InnerTable";
 import "./Table.scss";
 
 export const Table = () => {
   const [, setData] = useRecoilState(dataState);
-  const [cols, setCols] = useState([]);
-  const [outerCols, setOuterCols] = useState([]);
-  const [selectedFilters, setSelectedFilters] = useState(
-    new Set(columns.map((col) => col.title))
-  );
+  const [selectedCols, setSelectedCols] = useRecoilState(selectedColumnsState);
   const [search, setSearch] = useRecoilState(searchTextState);
   const grouped = useRecoilValue(groupedDataState);
+  const cols = useMemo(()=> {
+    const tableCols = groupByKeys.map((col, index) => ({
+      width: index === 0 ? "400px" : null, 
+      selector: (row) => row[col.id], 
+      name: col.title,
+      cell: row => <GroupTableCell summery={row[col.id]}/>,
+      omit: !selectedCols.has(col.title)
+    }));
+    return tableCols
+  },[selectedCols])
 
   useEffect(() => {
     initData();
-    getTableCols();
-    getOuterCol();
   }, []);
 
   const initData = () => {
@@ -42,37 +47,14 @@ export const Table = () => {
     set("data", mockUsers);
   };
 
-  const getTableCols = () => {
-    const tableCols = columns.map((col) => ({
-      ordinalNo: col.ordinalNo,
-      width: col.width ? `${col.width}px` : null,
-      selector: (row) => row[col.id],
-      name: col.title,
-      cell: (row) => <CustomCell row={row} {...col} />,
-    }));
-    tableCols.sort((a, b) => a.ordinalNo - b.ordinalNo);
-    setCols(tableCols);
-  };
-
-  const getOuterCol = () => {
-    const tableCols = groupByKeys.map((col, index) => ({
-      width: index === 0 ? "400px" : null, 
-      selector: (row) => row[col.id], 
-      name: col.title,
-      cell: row => <OuterCell summery={row[col.id]}/>
-    }));
-
-    setOuterCols(tableCols);
-  }
-
   const handleSelectFilter = (item) => {
-    let newSet = new Set(selectedFilters);
-    if (selectedFilters.has(item)) {
+    let newSet = new Set(selectedCols);
+    if (selectedCols.has(item)) {
       newSet.delete(item);
     } else {
       newSet.add(item);
     }
-    setSelectedFilters(newSet);
+    setSelectedCols(newSet);
   };
 
   const handleSearch = (event) => {
@@ -85,25 +67,17 @@ export const Table = () => {
         <FiltersBar
           allFilters={columns.map((col) => col.title)}
           onSelect={handleSelectFilter}
-          selectedFilters={selectedFilters}
+          selectedFilters={selectedCols}
         />
         <SearchBar onChange={handleSearch} value={search} />
       </div>
       {grouped && <DataTable
-        columns={outerCols.filter(c => selectedFilters.has(c.name))}
+        columns={cols}
         data={grouped}
         expandableRows
         expandableRowExpanded={() => true}
         className="table__main-table"
-        expandableRowsComponent={({ data }) => 
-          <DataTable
-            className="table__main-table__collapsible-table" 
-            columns={cols.filter(c => selectedFilters.has(c.name))}
-            data={data.children}
-            style={{ paddingRight: '50px' }}
-            noTableHead={true}
-          />
-        }
+        expandableRowsComponent={InnerTable}
       />}
     </div>
   );
