@@ -1,0 +1,24 @@
+.table {
+  padding: 20px;
+  
+  &__filters {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  &__main-table {
+    .rdt_TableHeadRow {
+      background-color: #dddddd;
+    }
+
+    .rdt_TableRow {
+      background-color: #f4f4f4;
+    }
+
+    &__collapsible-table {
+      .rdt_TableRow {
+        background-color: white;
+      } 
+    }
+  }
+}

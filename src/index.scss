@@ -11,3 +11,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+button {
+  background-color: unset;
+  border: none
+}
+
+button:hover {
+  cursor: pointer;
+}
+
+input[type='checkbox'] {
+  cursor: pointer;
+}

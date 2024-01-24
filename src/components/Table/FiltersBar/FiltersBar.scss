@@ -1,0 +1,9 @@
+.filters-bar {
+  display: flex;
+  margin-bottom: 5px;
+
+  &__button {
+    display: flex;
+    align-items: center;
+  }
+}
